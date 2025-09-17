@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Násobky – interaktivní tabulka</title>
+<style>
+  body {
+    background: url("pozadi.png") no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  h1 { margin: 10px; }
+  #controls { margin-bottom: 15px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(10, 50px);
+    grid-gap: 5px;
+    justify-content: center;
+  }
+  .cell {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    background: white;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .correct { background: lightgreen !important; }
+  .wrong { background: lightcoral !important; }
+  #feedback {
+    margin-top: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    color: green;
+  }
+  #feedback.error {
+    color: red;
+  }
+</style>
+</head>
+<body>
+  <h1>Procvičuj násobky</h1>
+  <div id="controls">
+    <label for="number">Vyber násobilku:</label>
+    <select id="number">
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+    </select>
+    <button onclick="resetGrid()">Nová hra</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div id="feedback"></div>
+
+<script>
+  const grid = document.getElementById("grid");
+  const select = document.getElementById("number");
+  const feedback = document.getElementById("feedback");
+
+  let correctCount = 0;
+
+  function createGrid() {
+    grid.innerHTML = "";
+    feedback.textContent = "";
+    feedback.classList.remove("error");
+    correctCount = 0;
+    for (let i = 1; i <= 100; i++) {
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.textContent = i;
+      cell.addEventListener("click", () => checkNumber(cell, i));
+      grid.appendChild(cell);
+    }
+  }
+
+  function checkNumber(cell, number) {
+    const multiple = parseInt(select.value);
+    const lastNeeded = multiple * 10;
+
+    if (number % multiple === 0 && number <= lastNeeded) {
+      if (!cell.classList.contains("correct")) {
+        cell.classList.add("correct");
+        correctCount++;
+      }
+      if (correctCount === 10) {
+        feedback.textContent = "Vše správně 🙂";
+        feedback.classList.remove("error");
+      }
+    } else {
+      cell.classList.add("wrong");
+      feedback.textContent = "To není správně — zkus to ještě jednou.";
+      feedback.classList.add("error");
+    }
+    cell.style.pointerEvents = "none"; 
+  }
+
+  function resetGrid() {
+    createGrid();
+  }
+
+  createGrid();
+</script>
+</body>
+</html>
