@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Násobky – náhodné uvnitř řádků</title>
+<style>
+  * { box-sizing: border-box; }
+  html,body { height:100%; margin:0; }
+  body {
+    background: url("násobilka 2 pozadí.png") no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 18px;
+  }
+  .container { max-width: 820px; margin: 0 auto; }
+  h1 { margin: 6px 0 12px; }
+  #controls { margin-bottom: 12px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(10, 50px);
+    grid-gap: 6px;
+    justify-content: center;
+    margin: 0 auto;
+    width: max-content; /* zajistí, že grid nebude roztahován */
+  }
+  .cell {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    background: white;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 6px;
+    user-select: none;
+    transition: transform .12s;
+  }
+  .cell:hover { transform: translateY(-3px); }
+  .correct { background: lightgreen !important; border-color: #6fbf6f; pointer-events: none; }
+  .wrong { background: lightcoral !important; animation: shake .32s; }
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+  }
+  #feedback { margin-top: 14px; font-size: 18px; font-weight: 600; color: green; }
+  #feedback.error { color: red; }
+  @media (max-width:520px) {
+    .grid { grid-template-columns: repeat(10, 34px); }
+    .cell { width:34px; height:34px; line-height:34px; font-size:14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Procvičuj násobky</h1>
+    <div id="controls">
+      <label for="number">Vyber násobilku:</label>
+      <select id="number">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+      </select>
+      <button id="resetBtn">Nová hra</button>
+    </div>
+
+    <div class="grid" id="grid" aria-label="Tabulka čísel"></div>
+    <div id="feedback" aria-live="polite"></div>
+  </div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const select = document.getElementById('number');
+  const feedback = document.getElementById('feedback');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let correctCount = 0;
+
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function createGrid() {
+    grid.innerHTML = '';
+    feedback.textContent = '';
+    feedback.classList.remove('error');
+    correctCount = 0;
+
+    const fragment = document.createDocumentFragment();
+
+    // generujeme čísla po desítkách a mícháme jen v rámci desítky
+    for (let start = 1; start <= 100; start += 10) {
+      const row = [];
+      for (let i = start; i < start + 10; i++) row.push(i);
+      shuffleArray(row);
+      row.forEach(number => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = number;
+        cell.setAttribute('role','button');
+        cell.tabIndex = 0;
+        cell.addEventListener('click', () => checkNumber(cell, number));
+        cell.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            checkNumber(cell, number);
+          }
+        });
+        fragment.appendChild(cell);
+      });
+    }
+
+    grid.appendChild(fragment);
+  }
+
+  function checkNumber(cell, number) {
+    const multiple = parseInt(select.value, 10);
+    const lastNeeded = multiple * 10;
+
+    if (number % multiple === 0 && number <= lastNeeded) {
+      if (!cell.classList.contains('correct')) {
+        cell.classList.add('correct');
+        correctCount++;
+      }
+      if (correctCount === 10) {
+        feedback.textContent = 'Vše správně 🙂';
+        feedback.classList.remove('error');
+        // zablokuj další klikání po dokončení
+        Array.from(grid.children).forEach(c => c.style.pointerEvents = 'none');
+      }
+    } else {
+      cell.classList.add('wrong');
+      feedback.textContent = 'To není správně — zkus to ještě jednou.';
+      feedback.classList.add('error');
+      setTimeout(() => cell.classList.remove('wrong'), 700);
+      cell.style.pointerEvents = 'none';
+    }
+  }
+
+  // události
+  resetBtn.addEventListener('click', createGrid);
+  select.addEventListener('change', createGrid);
+
+  // vykreslení při načtení
+  createGrid();
+</script>
+</body>
+</html>
